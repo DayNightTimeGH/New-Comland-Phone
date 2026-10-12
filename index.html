@@ -181,7 +181,7 @@ const T = {
     e_fail:"Something went wrong:", e_name:"Enter a name and a number."
   },
   co: {
-    title:"Smalo-paja Fono", sub:"Muto-paja to New Comland. Kapa tua number.",
+    title:"Fono de New Comland", sub:"Fono de New Comland. Tek tua number.",
     signin:"Kono kon Google", signout:"Fira", yournum:"Tua number",
     contacts:"Amiko-ko", keypad:"Yama", me:"Mi", addc:"Posa amiko", name:"Name", number:"Number",
     save:"Kapa", call:"Yama", msg:"Skri", send:"Don", write:"Skri kosa...", back:"Pasa",
@@ -199,7 +199,10 @@ const T = {
 let lang = "en";
 try { lang = localStorage.getItem("lang") || "en"; } catch {}
 const fmt = n => n ? n.replace(/(\d{3})(?=\d)/g, "$1 ").trim() : "";
-const t = (k, n) => (T[lang][k] || T.en[k] || k).replace("{n}", n ? fmt(n) : "");
+const t = (k, n) => {
+  const val = (T[lang] && T[lang][k]) || (T.en && T.en[k]) || k;
+  return val.replace("{n}", n ? fmt(n) : "");
+};
 const err = (k, n) => { $("err").textContent = k ? t(k, n) : ""; };
 const errRaw = m => { $("err").textContent = m; };
 
@@ -495,12 +498,4 @@ function listenCalls() {
   const q = query(collection(db, "calls"), where("toUid", "==", me.uid), where("status", "==", "ringing"));
   unsubCalls = onSnapshot(q, snap => {
     const ring = snap.docs.find(d => d.data().offer &&
-      Date.now() - (d.data().createdAt?.toMillis?.() ?? Date.now()) < 60000);
-    if (ring && !pc && !incoming) {
-      incoming = ring;
-      callUI("incoming", "incoming", ring.data().from);
-    } else if (!ring && incoming && !pc) {
-      incoming = null;
-      callUI(null);
-    }
-  },
+      Date.now() - (d
