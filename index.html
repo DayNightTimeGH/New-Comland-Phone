@@ -181,15 +181,15 @@ const T = {
     e_fail:"Something went wrong:", e_name:"Enter a name and a number."
   },
   co: {
-    title:"Fono de New Comland", sub:"Fono de New Comland. Tek tua number.",
-    signin:"Sign in kon Google", signout:"Sign out", yournum:"Tua number",
+    title:"Smalo-paja Fono", sub:"Muto-paja to New Comland. Kapa tua number.",
+    signin:"Kono kon Google", signout:"Fira", yournum:"Tua number",
     contacts:"Amiko-ko", keypad:"Yama", me:"Mi", addc:"Posa amiko", name:"Name", number:"Number",
-    save:"Save", call:"Yama", msg:"Skri", send:"Send", write:"Skri...", back:"Back",
+    save:"Kapa", call:"Yama", msg:"Skri", send:"Don", write:"Skri kosa...", back:"Pasa",
     nomsg:"Ne skri nua. Skri prima.", nocontacts:"Ne amiko nua. Posa amiko.",
     custom:"Kapa tua spia number", customhint:"3 to 9 digits. Tua vjeja number isi libre.",
     claim:"Kapa", lang:"Lingva", phonecall:"Fono", answer:"Ya", decline:"Ne", hangup:"Bye",
     incoming:"{n} yama me", calling:"Mi yama {n}...", connected:"Connected", connecting:"Connecting...",
-    e_signin:"Sign in ne bona.", e_digits:"3 to 9 digits. Number only.", e_reserved:"Si number isi reserved.",
+    e_signin:"Kono ne bona.", e_digits:"3 to 9 digits. Number only.", e_reserved:"Si number isi reserved.",
     e_same:"Si isi tua number nua.", e_taken:"Si number isi taken. Tra nova number.", e_nonum:"Ne pelo ha {n}.",
     e_mic:"Don microphone access to yama.", e_self:"Tu ne posibili usa tua spia number.", e_busy:"Tu isi in yama nua.",
     e_drop:"Da yama dropped.", e_declined:"Da yama ne.", e_enter:"Skri number.", e_empty:"Skri prima.",
@@ -503,38 +503,4 @@ function listenCalls() {
       incoming = null;
       callUI(null);
     }
-  }, e => errRaw(t("e_fail") + " " + e.code));
-}
-
-$("accept").onclick = async () => {
-  const d = incoming.data();
-  callRef = incoming.ref;
-  incoming = null;
-  try { await setupPeer(); }
-  catch {
-    await updateDoc(callRef, { status: "declined" }).catch(() => {});
-    cleanup();
-    return err("e_mic");
-  }
-  pc.onicecandidate = e => e.candidate &&
-    addDoc(collection(db, "calls", callRef.id, "calleeCandidates"), e.candidate.toJSON());
-  await pc.setRemoteDescription(d.offer);
-  watchCandidates("callerCandidates");
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-  await updateDoc(callRef, { answer: { type: answer.type, sdp: answer.sdp }, status: "active" });
-  callUI("connecting", "active");
-  callUnsubs.push(onSnapshot(callRef, s => { if (s.data()?.status === "ended") cleanup(); }));
-};
-$("decline").onclick = async () => {
-  const r = incoming.ref;
-  incoming = null;
-  callUI(null);
-  await updateDoc(r, { status: "declined" }).catch(() => {});
-};
-$("hangup").onclick = hangup;
-
-applyLang();
-</script>
-</body>
-</html>
+  },
