@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>New Comland Phone</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
@@ -11,84 +11,134 @@
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.5;min-height:100vh}
-.wrap{max-width:560px;margin:0 auto;padding:24px 16px 64px}
+.wrap{max-width:560px;margin:0 auto;padding:24px 16px 100px}
 h1,h2{margin:0;font-weight:800;letter-spacing:-.02em}
 h2{font-size:1.1rem;margin-bottom:10px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:16px}
-.number{font-size:clamp(2.4rem,11vw,3.6rem);font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:.02em;margin:4px 0 0}
+.number{font-size:clamp(2.2rem,10vw,3.4rem);font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums;margin:4px 0 0}
 .muted{color:var(--muted);font-size:.9rem}
 input,button{font:inherit;border-radius:10px;border:1px solid var(--line);padding:11px 13px}
 input{background:var(--bg);color:var(--text);width:100%}
 input:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 button{background:var(--gold);color:#1a1405;font-weight:600;cursor:pointer;border-color:var(--gold)}
 button.ghost{background:transparent;color:var(--text);border-color:var(--line)}
+button.bad{background:var(--bad);border-color:var(--bad)}
 .row{display:flex;gap:8px;margin-top:8px}
 .row button{white-space:nowrap}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.contact{display:flex;gap:8px;margin-top:8px}
+.contact .main{flex:1;text-align:left;display:flex;flex-direction:column;min-width:0}
+.contact .main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .msg{padding:10px 12px;border-radius:12px;margin-top:8px;max-width:88%;word-break:break-word}
 .msg.in{background:var(--bg);border:1px solid var(--line)}
 .msg.out{background:#2b5a3f;margin-left:auto}
-.msg small{display:block;color:var(--muted);margin-bottom:2px;cursor:pointer}
-button.bad{background:var(--bad);border-color:var(--bad)}
-.call{border-color:var(--gold)}
+#thread{max-height:50vh;overflow-y:auto}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tab{flex:1;border:0;border-radius:0;background:transparent;color:var(--muted);padding:14px 8px}
+.tab.on{color:var(--gold)}
+button.lang.on{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+#call{position:fixed;left:12px;right:12px;top:12px;max-width:536px;margin:0 auto;z-index:10;border-color:var(--gold);background:#0b2024}
 #err{color:var(--bad);min-height:1.4em;margin-top:12px}
 [hidden]{display:none!important}
-@media (prefers-reduced-motion:no-preference){.number{transition:opacity .2s}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>New Comland Phone</h1>
-  <p class="muted">The phone network for New Comland. Sign in to get your number.</p>
+  <h1 data-t="title">New Comland Phone</h1>
+  <p class="muted" data-t="sub"></p>
 
   <section id="login" class="panel">
-    <button id="signin">Sign in with Google</button>
+    <button id="signin" data-t="signin"></button>
+    <div class="row">
+      <button class="ghost lang" data-l="en">English</button>
+      <button class="ghost lang" data-l="co">Colandian</button>
+    </div>
   </section>
 
   <section id="main" hidden>
-    <div class="panel">
-      <div class="top">
-        <span class="muted" id="who"></span>
-        <button class="ghost" id="signout">Sign out</button>
-      </div>
-      <p class="muted" style="margin:14px 0 0">Your number</p>
-      <p class="number" id="mynum">...</p>
-    </div>
-
-    <div class="panel call" id="call" hidden>
-      <p class="muted" style="margin:0">Phone call</p>
-      <p class="number" style="font-size:1.6rem" id="callstatus"></p>
+    <div class="panel" id="call" hidden>
+      <p class="muted" style="margin:0" data-t="phonecall"></p>
+      <p class="number" style="font-size:1.5rem" id="callstatus"></p>
       <div class="row">
-        <button id="accept" hidden>Answer</button>
-        <button class="bad" id="decline" hidden>Decline</button>
-        <button class="bad" id="hangup" hidden>Hang up</button>
+        <button id="accept" data-t="answer" hidden></button>
+        <button class="bad" id="decline" data-t="decline" hidden></button>
+        <button class="bad" id="hangup" data-t="hangup" hidden></button>
       </div>
       <audio id="remote" autoplay></audio>
     </div>
 
-    <div class="panel">
-      <h2>Choose a custom number</h2>
-      <p class="muted" style="margin:0">3 to 9 digits. Taking a new number frees your old one.</p>
-      <div class="row">
-        <input id="custom" inputmode="numeric" maxlength="9" placeholder="e.g. 5551234" autocomplete="off">
-        <button id="claim">Claim number</button>
+    <div id="v-contacts">
+      <div class="panel">
+        <h2 data-t="addc"></h2>
+        <input id="cname" maxlength="30" data-p="name" autocomplete="off">
+        <div class="row">
+          <input id="cnum" inputmode="numeric" maxlength="9" data-p="number" autocomplete="off">
+          <button id="csave" data-t="save"></button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 data-t="contacts"></h2>
+        <div id="clist"></div>
       </div>
     </div>
 
-    <div class="panel">
-      <h2>Call or message</h2>
-      <input id="to" inputmode="numeric" maxlength="9" placeholder="Their number" autocomplete="off">
-      <div class="row"><button id="dial">Call this number</button></div>
-      <div class="row">
-        <input id="text" maxlength="500" placeholder="Write a message" autocomplete="off">
-        <button id="send">Send</button>
+    <div id="v-chat" hidden>
+      <div class="panel">
+        <div class="top">
+          <button class="ghost" id="back" data-t="back"></button>
+          <button id="chatcall" data-t="call"></button>
+        </div>
+        <h2 id="chatname" style="margin:14px 0 0"></h2>
+        <div id="thread"></div>
+        <div class="row">
+          <input id="text" maxlength="500" data-p="write" autocomplete="off">
+          <button id="send" data-t="send"></button>
+        </div>
       </div>
     </div>
 
-    <div class="panel">
-      <h2>Messages</h2>
-      <div id="list"><p class="muted">No messages yet. Send the first one.</p></div>
+    <div id="v-keypad" hidden>
+      <div class="panel">
+        <h2 data-t="keypad"></h2>
+        <input id="kp" inputmode="numeric" maxlength="9" data-p="number" autocomplete="off">
+        <div class="row">
+          <button id="kcall" data-t="call"></button>
+          <button class="ghost" id="kmsg" data-t="msg"></button>
+        </div>
+      </div>
     </div>
+
+    <div id="v-me" hidden>
+      <div class="panel">
+        <div class="top">
+          <span class="muted" id="who"></span>
+          <button class="ghost" id="signout" data-t="signout"></button>
+        </div>
+        <p class="muted" style="margin:14px 0 0" data-t="yournum"></p>
+        <p class="number" id="mynum">...</p>
+      </div>
+      <div class="panel">
+        <h2 data-t="custom"></h2>
+        <p class="muted" style="margin:0" data-t="customhint"></p>
+        <div class="row">
+          <input id="custom" inputmode="numeric" maxlength="9" placeholder="5551234" autocomplete="off">
+          <button id="claim" data-t="claim"></button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 data-t="lang"></h2>
+        <div class="row">
+          <button class="ghost lang" data-l="en">English</button>
+          <button class="ghost lang" data-l="co">Colandian</button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <button class="tab" data-v="contacts" data-t="contacts"></button>
+      <button class="tab" data-v="keypad" data-t="keypad"></button>
+      <button class="tab" data-v="me" data-t="me"></button>
+    </nav>
   </section>
 
   <p id="err" role="alert"></p>
@@ -112,21 +162,81 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const $ = id => document.getElementById(id);
 const RESERVED = ["911","112","999","000"];
-let me = null, myNumber = null, unsub = null;
 
+// ---------- Languages ----------
+const T = {
+  en: {
+    title:"New Comland Phone", sub:"The phone network for New Comland. Sign in to get your number.",
+    signin:"Sign in with Google", signout:"Sign out", yournum:"Your number",
+    contacts:"Contacts", keypad:"Keypad", me:"Me", addc:"Add a contact", name:"Name", number:"Number",
+    save:"Save", call:"Call", msg:"Message", send:"Send", write:"Write a message", back:"Back",
+    nomsg:"No messages yet. Send the first one.", nocontacts:"No contacts yet. Add one above.",
+    custom:"Choose a custom number", customhint:"3 to 9 digits. Taking a new number frees your old one.",
+    claim:"Claim number", lang:"Language", phonecall:"Phone call", answer:"Answer", decline:"Decline", hangup:"Hang up",
+    incoming:"Incoming call from {n}", calling:"Calling {n}...", connected:"Connected", connecting:"Connecting...",
+    e_signin:"Sign-in failed.", e_digits:"Use 3 to 9 digits, numbers only.", e_reserved:"That number is reserved.",
+    e_same:"That is already your number.", e_taken:"That number is taken. Try another.", e_nonum:"No one has the number {n}.",
+    e_mic:"Allow microphone access to use calls.", e_self:"You can't use your own number here.", e_busy:"You are already on a call.",
+    e_drop:"The call dropped.", e_declined:"Call declined.", e_enter:"Enter a number.", e_empty:"Write a message first.",
+    e_fail:"Something went wrong:", e_name:"Enter a name and a number."
+  },
+  co: {
+    title:"Fono de New Comland", sub:"Fono de New Comland. Tek tua number.",
+    signin:"Sign in kon Google", signout:"Sign out", yournum:"Tua number",
+    contacts:"Amiko-ko", keypad:"Yama", me:"Mi", addc:"Posa amiko", name:"Name", number:"Number",
+    save:"Save", call:"Yama", msg:"Skri", send:"Send", write:"Skri...", back:"Back",
+    nomsg:"Ne skri nua. Skri prima.", nocontacts:"Ne amiko nua. Posa amiko.",
+    custom:"Kapa tua spia number", customhint:"3 to 9 digits. Tua vjeja number isi libre.",
+    claim:"Kapa", lang:"Lingva", phonecall:"Fono", answer:"Ya", decline:"Ne", hangup:"Bye",
+    incoming:"{n} yama me", calling:"Mi yama {n}...", connected:"Connected", connecting:"Connecting...",
+    e_signin:"Sign in ne bona.", e_digits:"3 to 9 digits. Number only.", e_reserved:"Si number isi reserved.",
+    e_same:"Si isi tua number nua.", e_taken:"Si number isi taken. Tra nova number.", e_nonum:"Ne pelo ha {n}.",
+    e_mic:"Don microphone access to yama.", e_self:"Tu ne posibili usa tua spia number.", e_busy:"Tu isi in yama nua.",
+    e_drop:"Da yama dropped.", e_declined:"Da yama ne.", e_enter:"Skri number.", e_empty:"Skri prima.",
+    e_fail:"Mado:", e_name:"Skri name i number."
+  }
+};
+let lang = "en";
+try { lang = localStorage.getItem("lang") || "en"; } catch {}
 const fmt = n => n ? n.replace(/(\d{3})(?=\d)/g, "$1 ").trim() : "";
-const showErr = m => { $("err").textContent = m || ""; };
+const t = (k, n) => (T[lang][k] || T.en[k] || k).replace("{n}", n ? fmt(n) : "");
+const err = (k, n) => { $("err").textContent = k ? t(k, n) : ""; };
+const errRaw = m => { $("err").textContent = m; };
 
+let me = null, myNumber = null, msgs = [], contactsMap = {}, chatWith = null;
+let unsubM = null, unsubC = null, unsubCalls = null, lastCall = null;
+
+function applyLang() {
+  document.title = t("title");
+  document.querySelectorAll("[data-t]").forEach(e => { e.textContent = t(e.dataset.t); });
+  document.querySelectorAll("[data-p]").forEach(e => { e.placeholder = t(e.dataset.p); });
+  document.querySelectorAll("button.lang").forEach(b => b.classList.toggle("on", b.dataset.l === lang));
+  renderContacts(); renderChat(); refreshCall();
+}
+document.querySelectorAll("button.lang").forEach(b => b.onclick = () => {
+  lang = b.dataset.l;
+  try { localStorage.setItem("lang", lang); } catch {}
+  applyLang();
+});
+
+// ---------- Views ----------
+function show(v) {
+  for (const x of ["contacts", "chat", "keypad", "me"]) $("v-" + x).hidden = x !== v;
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.v === (v === "chat" ? "contacts" : v)));
+  err();
+}
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => show(b.dataset.v));
+function openChat(n) { chatWith = n; show("chat"); renderChat(); $("text").focus(); }
+$("back").onclick = () => { chatWith = null; show("contacts"); };
+
+// ---------- Numbers ----------
 function randomNumber() {
   const a = new Uint32Array(1);
   crypto.getRandomValues(a);
   return String(100000000 + (a[0] % 900000000));
 }
-
-// Claims `number` for the user. Frees their old number in the same transaction.
 async function claimNumber(uid, number, name) {
-  const numRef = doc(db, "numbers", number);
-  const userRef = doc(db, "users", uid);
+  const numRef = doc(db, "numbers", number), userRef = doc(db, "users", uid);
   await runTransaction(db, async tx => {
     const [n, u] = await Promise.all([tx.get(numRef), tx.get(userRef)]);
     if (n.exists()) throw new Error("taken");
@@ -137,7 +247,6 @@ async function claimNumber(uid, number, name) {
   });
   return number;
 }
-
 async function ensureNumber(user) {
   const snap = await getDoc(doc(db, "users", user.uid));
   if (snap.exists() && snap.data().phoneNumber) return snap.data().phoneNumber;
@@ -145,90 +254,178 @@ async function ensureNumber(user) {
     try { return await claimNumber(user.uid, randomNumber(), user.displayName); }
     catch (e) { if (e.message !== "taken") throw e; }
   }
-  throw new Error("Could not find a free number. Try signing in again.");
+  throw new Error("No free number");
 }
 
 $("signin").onclick = async () => {
-  showErr();
+  err();
   try { await signInWithPopup(auth, new GoogleAuthProvider()); }
-  catch (e) { showErr("Sign-in failed: " + e.code); }
+  catch (e) { errRaw(t("e_signin") + " " + e.code); }
 };
 $("signout").onclick = () => signOut(auth);
 
 onAuthStateChanged(auth, async user => {
-  if (unsub) { unsub(); unsub = null; }
-  if (unsubCalls) { unsubCalls(); unsubCalls = null; }
+  [unsubM, unsubC, unsubCalls].forEach(u => u && u());
+  unsubM = unsubC = unsubCalls = null;
   incoming = null; cleanup();
-  me = user; myNumber = null;
+  me = user; myNumber = null; msgs = []; contactsMap = {}; chatWith = null;
   $("login").hidden = !!user;
   $("main").hidden = !user;
   if (!user) return;
   $("who").textContent = user.displayName || user.email;
+  show("contacts");
   try {
     myNumber = await ensureNumber(user);
     $("mynum").textContent = fmt(myNumber);
-    listen();
-    listenCalls();
-  } catch (e) { showErr(e.message); }
+    listen(); listenCalls();
+  } catch (e) { errRaw(t("e_fail") + " " + e.message); }
 });
 
 $("claim").onclick = async () => {
-  showErr();
+  err();
   const n = $("custom").value.trim();
-  if (!/^[0-9]{3,9}$/.test(n)) return showErr("Use 3 to 9 digits, numbers only.");
-  if (RESERVED.includes(n)) return showErr("That number is reserved.");
-  if (n === myNumber) return showErr("That is already your number.");
+  if (!/^[0-9]{3,9}$/.test(n)) return err("e_digits");
+  if (RESERVED.includes(n)) return err("e_reserved");
+  if (n === myNumber) return err("e_same");
   try {
     myNumber = await claimNumber(me.uid, n, me.displayName);
     $("mynum").textContent = fmt(myNumber);
     $("custom").value = "";
-  } catch (e) {
-    showErr(e.message === "taken" ? "That number is taken. Try another." : "Could not claim number: " + e.message);
-  }
+    renderContacts(); renderChat();
+  } catch (e) { e.message === "taken" ? err("e_taken") : errRaw(t("e_fail") + " " + e.message); }
 };
 
-$("send").onclick = async () => {
-  showErr();
-  const to = $("to").value.trim(), text = $("text").value.trim();
-  if (!/^[0-9]{3,9}$/.test(to)) return showErr("Enter the number you want to message.");
-  if (!text) return showErr("Write a message first.");
+// ---------- Contacts & messages ----------
+const nameOf = n => contactsMap[n] || fmt(n);
+
+$("csave").onclick = async () => {
+  err();
+  const name = $("cname").value.trim(), n = $("cnum").value.trim();
+  if (!name || !n) return err("e_name");
+  if (!/^[0-9]{3,9}$/.test(n)) return err("e_digits");
+  try {
+    await setDoc(doc(db, "users", me.uid, "contacts", n), { name });
+    $("cname").value = ""; $("cnum").value = "";
+  } catch (e) { errRaw(t("e_fail") + " " + e.message); }
+};
+
+function listen() {
+  unsubM = onSnapshot(query(collection(db, "messages"), where("uids", "array-contains", me.uid)), snap => {
+    msgs = snap.docs.map(d => d.data())
+      .sort((a, b) => (a.createdAt?.seconds ?? 9e12) - (b.createdAt?.seconds ?? 9e12));
+    renderContacts(); renderChat();
+  }, e => errRaw(t("e_fail") + " " + e.code));
+  unsubC = onSnapshot(collection(db, "users", me.uid, "contacts"), snap => {
+    contactsMap = {};
+    snap.docs.forEach(d => { contactsMap[d.id] = d.data().name; });
+    renderContacts(); renderChat();
+  }, e => errRaw(t("e_fail") + " " + e.code));
+}
+
+function renderContacts() {
+  const list = $("clist");
+  if (!list) return;
+  list.textContent = "";
+  const last = {};
+  for (const m of msgs) last[m.from === myNumber ? m.to : m.from] = m;
+  const nums = [...new Set([...Object.keys(contactsMap), ...Object.keys(last)])];
+  nums.sort((a, b) => (last[b]?.createdAt?.seconds ?? (last[b] ? 9e12 : 0)) - (last[a]?.createdAt?.seconds ?? (last[a] ? 9e12 : 0))
+    || nameOf(a).localeCompare(nameOf(b)));
+  if (!nums.length) {
+    const p = document.createElement("p");
+    p.className = "muted"; p.textContent = t("nocontacts");
+    list.append(p); return;
+  }
+  for (const n of nums) {
+    const row = document.createElement("div");
+    row.className = "contact";
+    const main = document.createElement("button");
+    main.className = "ghost main";
+    const nm = document.createElement("strong"); nm.textContent = nameOf(n);
+    const sub = document.createElement("span"); sub.className = "muted";
+    sub.textContent = last[n] ? last[n].text : fmt(n);
+    main.append(nm, sub);
+    main.onclick = () => openChat(n);
+    const c = document.createElement("button");
+    c.textContent = t("call");
+    c.onclick = () => dial(n);
+    row.append(main, c);
+    list.append(row);
+  }
+}
+
+function renderChat() {
+  if (!chatWith) return;
+  $("chatname").textContent = nameOf(chatWith) + (contactsMap[chatWith] ? " (" + fmt(chatWith) + ")" : "");
+  const th = $("thread");
+  th.textContent = "";
+  const mine = msgs.filter(m => m.from === chatWith || m.to === chatWith);
+  if (!mine.length) {
+    const p = document.createElement("p");
+    p.className = "muted"; p.textContent = t("nomsg");
+    th.append(p); return;
+  }
+  for (const m of mine) {
+    const box = document.createElement("div");
+    box.className = "msg " + (m.from === myNumber ? "out" : "in");
+    box.textContent = m.text;
+    th.append(box);
+  }
+  th.scrollTop = th.scrollHeight;
+}
+
+async function sendMsg(to, text) {
+  if (!/^[0-9]{3,9}$/.test(to)) return err("e_enter");
+  if (!text) return err("e_empty");
   try {
     const target = await getDoc(doc(db, "numbers", to));
-    if (!target.exists()) return showErr("No one has the number " + fmt(to) + ".");
+    if (!target.exists()) return err("e_nonum", to);
     await addDoc(collection(db, "messages"), {
-      from: myNumber, to, text,
-      uids: [me.uid, target.data().uid],
-      createdAt: serverTimestamp()
+      from: myNumber, to, text, uids: [me.uid, target.data().uid], createdAt: serverTimestamp()
     });
     $("text").value = "";
-  } catch (e) { showErr("Could not send: " + e.message); }
+  } catch (e) { errRaw(t("e_fail") + " " + e.message); }
+}
+$("send").onclick = () => { err(); sendMsg(chatWith, $("text").value.trim()); };
+$("text").onkeydown = e => { if (e.key === "Enter") $("send").click(); };
+$("chatcall").onclick = () => dial(chatWith);
+$("kcall").onclick = () => { err(); dial($("kp").value.trim()); };
+$("kmsg").onclick = () => {
+  err();
+  const n = $("kp").value.trim();
+  if (!/^[0-9]{3,9}$/.test(n)) return err("e_enter");
+  openChat(n);
 };
 
 // ---------- Voice calls (WebRTC, signaling through Firestore) ----------
 const ICE = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }] };
-let pc = null, localStream = null, callRef = null, callUnsubs = [], incoming = null, unsubCalls = null, pending = [];
+let pc = null, localStream = null, callRef = null, callUnsubs = [], incoming = null, pending = [];
 
-function callUI(text, mode) {
-  $("call").hidden = !text;
-  $("callstatus").textContent = text || "";
-  $("accept").hidden = mode !== "incoming";
-  $("decline").hidden = mode !== "incoming";
-  $("hangup").hidden = mode === "incoming" || !text;
+function callUI(key, mode, n) {
+  lastCall = key ? { key, mode, n } : null;
+  refreshCall();
+}
+function refreshCall() {
+  const c = lastCall;
+  $("call").hidden = !c;
+  $("callstatus").textContent = c ? t(c.key, c.n) : "";
+  $("accept").hidden = !c || c.mode !== "incoming";
+  $("decline").hidden = !c || c.mode !== "incoming";
+  $("hangup").hidden = !c || c.mode === "incoming";
 }
 
 async function setupPeer() {
   localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   pc = new RTCPeerConnection(ICE);
   pending = [];
-  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+  localStream.getTracks().forEach(tr => pc.addTrack(tr, localStream));
   pc.ontrack = e => { $("remote").srcObject = e.streams[0]; };
   pc.onconnectionstatechange = () => {
     if (!pc) return;
-    if (pc.connectionState === "connected") callUI("Connected", "active");
-    if (pc.connectionState === "failed") { showErr("The call dropped."); hangup(); }
+    if (pc.connectionState === "connected") callUI("connected", "active");
+    if (pc.connectionState === "failed") { err("e_drop"); hangup(); }
   };
 }
-
 async function addCandidate(c) {
   if (pc?.remoteDescription) await pc.addIceCandidate(c).catch(() => {});
   else pending.push(c);
@@ -243,17 +440,15 @@ function watchCandidates(side) {
       if (ch.type === "added") addCandidate(new RTCIceCandidate(ch.doc.data()));
     })));
 }
-
 function cleanup() {
   callUnsubs.forEach(u => u());
   callUnsubs = [];
   if (pc) { pc.close(); pc = null; }
-  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  if (localStream) { localStream.getTracks().forEach(tr => tr.stop()); localStream = null; }
   $("remote").srcObject = null;
   callRef = null;
-  callUI("");
+  callUI(null);
 }
-
 async function hangup() {
   const r = callRef;
   cleanup();
@@ -261,12 +456,13 @@ async function hangup() {
 }
 
 async function startCall(to) {
-  if (pc) return showErr("You are already on a call.");
-  if (to === myNumber) return showErr("You can't call your own number.");
+  if (!/^[0-9]{3,9}$/.test(to)) return err("e_enter");
+  if (pc) return err("e_busy");
+  if (to === myNumber) return err("e_self");
   const target = await getDoc(doc(db, "numbers", to));
-  if (!target.exists()) return showErr("No one has the number " + fmt(to) + ".");
+  if (!target.exists()) return err("e_nonum", to);
   try { await setupPeer(); }
-  catch { cleanup(); return showErr("Allow microphone access to make calls."); }
+  catch { cleanup(); return err("e_mic"); }
   callRef = doc(collection(db, "calls"));
   await setDoc(callRef, {
     from: myNumber, to, fromUid: me.uid, toUid: target.data().uid,
@@ -277,7 +473,7 @@ async function startCall(to) {
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
   await updateDoc(callRef, { offer: { type: offer.type, sdp: offer.sdp } });
-  callUI("Calling " + fmt(to) + "...", "out");
+  callUI("calling", "out", to);
   callUnsubs.push(onSnapshot(callRef, async s => {
     const d = s.data();
     if (!d || !pc) return;
@@ -285,34 +481,30 @@ async function startCall(to) {
       await pc.setRemoteDescription(d.answer);
       await flushCandidates();
     }
-    if (d.status === "declined") { showErr("Call declined."); cleanup(); }
+    if (d.status === "declined") { err("e_declined"); cleanup(); }
     if (d.status === "ended") cleanup();
   }));
   watchCandidates("calleeCandidates");
 }
+function dial(n) {
+  err();
+  startCall(n).catch(e => { cleanup(); errRaw(t("e_fail") + " " + e.message); });
+}
 
 function listenCalls() {
-  const q = query(collection(db, "calls"),
-    where("toUid", "==", me.uid), where("status", "==", "ringing"));
+  const q = query(collection(db, "calls"), where("toUid", "==", me.uid), where("status", "==", "ringing"));
   unsubCalls = onSnapshot(q, snap => {
     const ring = snap.docs.find(d => d.data().offer &&
       Date.now() - (d.data().createdAt?.toMillis?.() ?? Date.now()) < 60000);
     if (ring && !pc && !incoming) {
       incoming = ring;
-      callUI("Incoming call from " + fmt(ring.data().from), "incoming");
+      callUI("incoming", "incoming", ring.data().from);
     } else if (!ring && incoming && !pc) {
       incoming = null;
-      callUI("");
+      callUI(null);
     }
-  }, e => showErr("Could not listen for calls: " + e.code));
+  }, e => errRaw(t("e_fail") + " " + e.code));
 }
-
-$("dial").onclick = () => {
-  showErr();
-  const to = $("to").value.trim();
-  if (!/^[0-9]{3,9}$/.test(to)) return showErr("Enter the number you want to call.");
-  startCall(to).catch(e => { cleanup(); showErr("Could not start the call: " + e.message); });
-};
 
 $("accept").onclick = async () => {
   const d = incoming.data();
@@ -322,7 +514,7 @@ $("accept").onclick = async () => {
   catch {
     await updateDoc(callRef, { status: "declined" }).catch(() => {});
     cleanup();
-    return showErr("Allow microphone access to answer calls.");
+    return err("e_mic");
   }
   pc.onicecandidate = e => e.candidate &&
     addDoc(collection(db, "calls", callRef.id, "calleeCandidates"), e.candidate.toJSON());
@@ -331,50 +523,18 @@ $("accept").onclick = async () => {
   const answer = await pc.createAnswer();
   await pc.setLocalDescription(answer);
   await updateDoc(callRef, { answer: { type: answer.type, sdp: answer.sdp }, status: "active" });
-  callUI("Connecting...", "active");
+  callUI("connecting", "active");
   callUnsubs.push(onSnapshot(callRef, s => { if (s.data()?.status === "ended") cleanup(); }));
 };
-
 $("decline").onclick = async () => {
   const r = incoming.ref;
   incoming = null;
-  callUI("");
+  callUI(null);
   await updateDoc(r, { status: "declined" }).catch(() => {});
 };
-
 $("hangup").onclick = hangup;
 
-function listen() {
-  const q = query(collection(db, "messages"), where("uids", "array-contains", me.uid));
-  unsub = onSnapshot(q, snap => {
-    const msgs = snap.docs.map(d => d.data())
-      .sort((a, b) => (a.createdAt?.seconds ?? 9e12) - (b.createdAt?.seconds ?? 9e12));
-    const list = $("list");
-    list.textContent = "";
-    if (!msgs.length) {
-      const p = document.createElement("p");
-      p.className = "muted";
-      p.textContent = "No messages yet. Send the first one.";
-      list.append(p);
-      return;
-    }
-    for (const m of msgs) {
-      const mine = m.from === myNumber;
-      const other = mine ? m.to : m.from;
-      const box = document.createElement("div");
-      box.className = "msg " + (mine ? "out" : "in");
-      const label = document.createElement("small");
-      label.textContent = (mine ? "To " : "From ") + fmt(other);
-      label.title = "Tap to reply";
-      label.onclick = () => { $("to").value = other; $("text").focus(); };
-      const body = document.createElement("div");
-      body.textContent = m.text;
-      box.append(label, body);
-      list.append(box);
-    }
-    list.lastChild.scrollIntoView({ block: "nearest" });
-  }, e => showErr("Could not load messages: " + e.code));
-}
+applyLang();
 </script>
 </body>
 </html>
